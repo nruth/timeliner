@@ -23,6 +23,7 @@ get '/papers/:search_term' do |search_term|
   papers = results['documents']
 
   haml :'papers/timeline', :locals => {
+    :timeline_data => papers,
     :search_term => search_term,
     :items_found => "#{results['items_per_page']} of #{results['total_results']} (page #{results['current_page']} of #{results['total_pages']})",
     :papers => papers.sort {|b,a| a['year'] <=> b['year']}
