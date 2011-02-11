@@ -3,7 +3,7 @@ require 'rest-client'
 require 'haml'
 require 'json'
 
-MAX_RESULTS = 200
+DEFAULT_QUERY_SIZE = 100
 
 get '/news/:search_term' do |search_term|
   result = Timeline.query_yql %Q(select title,abstract,url,date from search.news(#{MAX_RESULTS}) where query="#{search_term}")
@@ -17,7 +17,8 @@ get '/news/:search_term' do |search_term|
 end
 
 get '/papers/:search_term' do |search_term|
-  result = Timeline.query_yql %Q(select * from mendeley.search where query="#{search_term}")
+  item_count = params['results'] || DEFAULT_QUERY_SIZE
+  result = Timeline.query_yql %Q(select * from mendeley.search where query="#{search_term}" and items="#{item_count}")
   papers = result['results']['json']['documents']
 
   haml :'papers/timeline', :locals => {
