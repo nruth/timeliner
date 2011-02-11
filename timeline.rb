@@ -6,7 +6,8 @@ require 'json'
 DEFAULT_QUERY_SIZE = 100
 
 get '/news/:search_term' do |search_term|
-  result = Timeline.query_yql %Q(select title,abstract,url,date from search.news(#{MAX_result}) where query="#{search_term}")
+  item_count = params['results'] || DEFAULT_QUERY_SIZE
+  result = Timeline.query_yql %Q(select title,abstract,url,date from search.news(#{item_count}) where query="#{search_term}")
   news = result['results']['result']
 
   haml :'news/timeline', :locals => {
