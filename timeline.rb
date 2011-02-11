@@ -18,12 +18,13 @@ end
 
 get '/papers/:search_term' do |search_term|
   item_count = params['results'] || DEFAULT_QUERY_SIZE
-  result = Timeline.query_yql %Q(select * from mendeley.search where query="#{search_term}" and items="#{item_count}")
-  papers = result['results']['json']['documents']
+  results = Timeline.query_yql %Q(select * from mendeley.search where query="#{search_term}" and items="#{item_count}")
+  results = results['results']['json']
+  papers = results['documents']
 
   haml :'papers/timeline', :locals => {
     :search_term => search_term,
-    :items_found => "#{result['items_per_page']} of #{result['total_result']} (page #{result['current_page']} of #{result['total_pages']})",
+    :items_found => "#{results['items_per_page']} of #{results['total_results']} (page #{results['current_page']} of #{results['total_pages']})",
     :papers => papers.sort {|b,a| a['year'] <=> b['year']}
   }
 end
