@@ -1,13 +1,7 @@
 :javascript
   var timeline_data = {  // save as a global variable
   'dateTimeFormat': 'iso8601',
-  'events' : [
-  #{
-    timeline_data.map do |element|
-      haml :'timeline_item.js', :locals => {:element => element}
-    end.join
-    }
-  ]
+  'events' : #{timeline_data.to_json}
   }
 
   var tl;
