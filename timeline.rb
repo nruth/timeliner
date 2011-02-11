@@ -6,7 +6,7 @@ require 'json'
 MAX_RESULTS = 200
 
 get '/news/:search_term' do |search_term|
-  result = query_yql %Q(select title,abstract,url,date from search.news(#{MAX_RESULTS}) where query="#{search_term}")
+  result = Timeline.query_yql %Q(select title,abstract,url,date from search.news(#{MAX_RESULTS}) where query="#{search_term}")
   news = result['results']['result']
 
   haml :'news/timeline', :locals => {
@@ -17,7 +17,7 @@ get '/news/:search_term' do |search_term|
 end
 
 get '/papers/:search_term' do |search_term|
-  result = query_yql %Q(select * from mendeley.search where query="#{search_term}")
+  result = Timeline.query_yql %Q(select * from mendeley.search where query="#{search_term}")
   papers = result['results']['json']['documents']
 
   haml :'papers/timeline', :locals => {
@@ -27,15 +27,17 @@ get '/papers/:search_term' do |search_term|
   }
 end
 
-# queries yql and returns a hashmap of the results
-def query_yql(query)
-  json = RestClient.get("http://query.yahooapis.com/v1/public/yql",
-    { :params => {
-        :q => query,
-        :format => 'json',
-        :env => 'store://datatables.org/alltableswithkeys'
+module Timeline
+  # queries yql and returns a hashmap of the results
+  def self.query_yql(query)
+    json = RestClient.get("http://query.yahooapis.com/v1/public/yql",
+      { :params => {
+          :q => query,
+          :format => 'json',
+          :env => 'store://datatables.org/alltableswithkeys'
+        }
       }
-    }
-  )
-  JSON.parse(json)['query']
+    )
+    JSON.parse(json)['query']
+  end
 end
