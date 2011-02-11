@@ -6,7 +6,7 @@ require 'json'
 DEFAULT_QUERY_SIZE = 100
 
 get '/news/:search_term' do |search_term|
-  result = Timeline.query_yql %Q(select title,abstract,url,date from search.news(#{MAX_RESULTS}) where query="#{search_term}")
+  result = Timeline.query_yql %Q(select title,abstract,url,date from search.news(#{MAX_result}) where query="#{search_term}")
   news = result['results']['result']
 
   haml :'news/timeline', :locals => {
@@ -23,13 +23,13 @@ get '/papers/:search_term' do |search_term|
 
   haml :'papers/timeline', :locals => {
     :search_term => search_term,
-    :items_found => result['count'],
+    :items_found => "#{result['items_per_page']} of #{result['total_result']} (page #{result['current_page']} of #{result['total_pages']})",
     :papers => papers.sort {|b,a| a['year'] <=> b['year']}
   }
 end
 
 module Timeline
-  # queries yql and returns a hashmap of the results
+  # queries yql and returns a hashmap of the result
   def self.query_yql(query)
     json = RestClient.get("http://query.yahooapis.com/v1/public/yql",
       { :params => {
