@@ -8,15 +8,29 @@ DEFAULT_QUERY_SIZE = 100
 START_YEAR = 1900
 END_YEAR = Time.now.year
 
-get '/news/:search_term' do |search_term|
+get '/guardian/:search_term/from/:start/to/:end' do |search_term, start_year, end_year|
   item_count = params['results'] || DEFAULT_QUERY_SIZE
-  result = Timeline.query_yql %Q(select title,abstract,url,date from search.news(#{item_count}) where query="#{search_term}")
-  news = result['results']['result']
+  results = Timeline.query_yql %Q(select * from guardian.content.search(#{item_count}) where q="#{search_term}" and from-date="#{start_year}-01-01" and to-date="#{end_year}-01-01")
+  news = results['results']['content']
 
   haml :'news/timeline', :locals => {
+    :timeline_data => Timeline.map_news_json_to_timeline_json(news),
     :search_term => search_term,
-    :items_found => result['count'],
-    :news => news.sort {|a,b| a['date'] <=> b['date']}
+    :items_found => results['count'],
+    :news => news
+  }
+end
+
+get '/news/:search_term' do |search_term|
+  item_count = params['results'] || DEFAULT_QUERY_SIZE
+  results = Timeline.query_yql %Q(select * from guardian.content.search(#{item_count}) where q="#{search_term}" and from-date="1960-01-01" and to-date="1970-01-01")
+  news = results['results']['content']
+
+  haml :'news/timeline', :locals => {
+    :timeline_data => Timeline.map_news_json_to_timeline_json(news),
+    :search_term => search_term,
+    :items_found => results['count'],
+    :news => news
   }
 end
 
@@ -30,7 +44,7 @@ get '/papers/:search_term' do |search_term|
     :timeline_data => Timeline.map_mendeley_json_to_timeline_json(papers),
     :search_term => search_term,
     :items_found => "#{results['items_per_page']} of #{results['total_results']} (page #{results['current_page']} of #{results['total_pages']})",
-    :papers => papers.sort {|b,a| a['year'] <=> b['year']}
+    :papers => papers
   }
 end
 
@@ -46,6 +60,17 @@ module Timeline
       }
     )
     JSON.parse(json)['query']
+  end
+
+  def self.map_news_json_to_timeline_json(json)
+    json.map do |element|
+      n = {}
+      n['start'] = element['web-publication-date']
+      n['title'] = element['web-title']
+      n['description'] = element['web-title']
+      n['link'] = element['web-url']
+      n
+    end
   end
 
   def self.map_mendeley_json_to_timeline_json(json)
