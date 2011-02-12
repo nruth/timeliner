@@ -28,7 +28,7 @@ var Q="#{params['q']}";
 <table width="100%"><tr><td align="center">
 
 <table><tr><td valign="bottom" colspan="2">
-<a href="index.html">
+<a href="/search">
 <img src="logo.png" /> 
 </a>
 </td></tr><tr>
