@@ -44,7 +44,7 @@ var Q="#{params['q']}";
 </a>
 </td></tr></table>
 <br />
-<form action="search.php" method="get">
+<form action="search" method="get">
 <table><tr>
 <td width="200px" valign="bottom"></td>
 <td width="300px" valign="bottom">
