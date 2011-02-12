@@ -76,7 +76,7 @@ function forcemore(){
   var timeline_min_month = (parseInt(minDate.getMonth()) + 1) % 12;
   if(min_global_month < timeline_min_month){
     // alert('found enough for now');
-    window.setTimeout(forcemore, 10000);
+    window.setTimeout(forcemore, 20000);
     return;
   } else {
     // alert('values are ok, min_global_month '+min_global_month+ ' timeline_min_month ' +timeline_min_month);
@@ -95,10 +95,14 @@ function forcemore(){
   nueva.setTime(nueva.getTime() - Timeline.DateTime.gregorianUnitLengths[Timeline.DateTime.WEEK]);
 
   // alert(nueva+" - "+minGlobal);
-  if (tl.getBand(1).getMinDate()<minGlobal){
-    // alert('made more work');
+  if (nueva.getTime() != minGlobal.getTime()){
+    alert('made more work');
     addEvents(nueva,minGlobal);
     minGlobal = nueva;
+  } else {
+    alert('gap too small to query '+nueva.getTime() + ' ' + minGlobal.getTime());
+    window.setTimeout(forcemore, 20000);
+    return;
   }
   
   // alert('scheduling next background work');
