@@ -5,7 +5,6 @@ var url = '.';
 var tl;
 var eventSource1 = new Timeline.DefaultEventSource();
 var minGlobal, maxGlobal;
-var sem=1;
 
 function onLoad() {
 	var tl_el = document.getElementById("my-timeline");
@@ -115,55 +114,49 @@ function addEvents(start,end){
 //	var url = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20search.news(10)%20where%20query%3D%22Egypt%22%20&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=cbfunc";
 	
 	var url="http://query.yahooapis.com/v1/public/yql?q=use%20'http%3A%2F%2Fdl.dropbox.com%2Fu%2F10415031%2Fnews.xml'%3B%20select%20*%20from%20news%20where%20query%3D%22"+Q+"%22%20and%20start%3D%22"+startD+"%22%20and%20end%3D%22"+endD+"%22&format=json&diagnostics=false&debug=true&callback=cbfunc";
-  	http.open("GET", url, true);
-  	http.onreadystatechange=function() {
-    	if(http.readyState == 4) {
-			//cbfunc();
-			eval(http.responseText);
-		}
+  http.open("GET", url, true);
+  http.onreadystatechange=function() {
+    if(http.readyState == 4) {
+	    //cbfunc();
+  	  eval(http.responseText);
   	}
-  	http.send(null);
-
+  }
+  http.send(null);
 }
 
 function cbfunc( input ){
-	//while(sem==0){}
-	//sem=0;
 	if (input.query.results!=null){
 		var items = input.query.results.content;  
-		  var no_items=items.length;  
-		  for(var i=0;i<no_items;i++){  
-			var startN= items[i]["web-publication-date"];
-			var title = items[i]["web-title"];  
-			var url = items[i]["web-url"];  
-			//var desc = items[i].abstract;  
-			//startN=startN.substr(0,startN.indexOf("T"));	
+	  var no_items=items.length;  
+	  for(var i=0;i<no_items;i++){  
+	  	var startN= items[i]["web-publication-date"];
+  		var title = items[i]["web-title"];  
+  		var url = items[i]["web-url"];  
+  		//var desc = items[i].abstract;  
+  		//startN=startN.substr(0,startN.indexOf("T"));	
 			
-			var new_data = {  // save as a global variable
-			'dateTimeFormat': 'iso8601',
-			'events' : [
-					{'start': startN,
-					'title': title,
-					'description': '',
-					'image': '',
-					'link': url
-					}
-			
-			]
-			};
-			var auxDate=Timeline.DateTime.parseGregorianDateTime(startN);
-			//alert(auxDate);
-			//alert(gStart+"<?"+auxDate+"<?"+gEnd)
-			if (gStart<auxDate && auxDate<gEnd){
-				//console.log(new_data);
-				eventSource1.loadJSON(new_data, url);
-			}
-		  } 
-	}
-	//sem=1;
+  		var new_data = {
+    		'dateTimeFormat': 'iso8601',
+    		'events' : [
+  				{'start': startN,
+  				'title': title,
+  				'description': '',
+  				'image': '',
+  				'link': url
+  				}
+  			]
+  		};
+  		var auxDate=Timeline.DateTime.parseGregorianDateTime(startN);
+  		//alert(auxDate);
+  		//alert(gStart+"<?"+auxDate+"<?"+gEnd)
+      // if (gStart<auxDate && auxDate<gEnd){
+        // console.log(new_data);
+        console.log(startN);
+  			eventSource1.loadJSON(new_data, url);
+      // }
+    } 
+  }
 	document.getElementById('loading').style.visibility='hidden';
-	
-
 	
 	/*var a = minGlobal.getYear()+1900;
 	var m = minGlobal.getMonth()+1;
