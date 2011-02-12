@@ -1,0 +1,1 @@
+use 'http://dl.dropbox.com/u/10415031/news.xml'; select * from news where query="Egypt" and start="2011-01-10" and end="2011-01-20"

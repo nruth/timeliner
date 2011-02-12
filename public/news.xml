@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<table xmlns="http://query.yahooapis.com/v1/schema/table.xsd">
+  <meta>
+    <author>Jeremy Hubert</author>
+  </meta>
+  <bindings>
+    <select produces="XML" itemPath="output.content">
+      <urls>
+        <url></url>
+
+      </urls>
+      <inputs>
+        <key id="query" type="xs:string" paramType="variable" required="true"/>
+        <key id="start" type="xs:string" paramType="variable" required="true"/>
+        <key id="end" type="xs:string" paramType="variable" required="true"/>
+      </inputs>
+      <execute><![CDATA[
+
+        var tweets, sites, questions, related, images, videos, info, html;
+        y.env("http://datatables.org/alltables.env");
+		        
+		tweets=<></>;
+		var aux=start.split('-');
+		dateStart=new Date(aux[0],aux[1]-1,aux[2]);
+		aux=end.split('-');
+		dateEnd=new Date(aux[0],aux[1]-1,aux[2]);
+		for (var i=dateStart; i<dateEnd; i.setDate(i.getDate()+1)){
+			var aux=(i.getYear()+1900)+'-'+(1+i.getMonth())+"-"+i.getDate();
+			//y.log(""+aux);	
+        	var q=y.query('select * from guardian.content.search(3) where q=@query and from-date=@startdate and to-date=@enddate and show-tags="keyword" and show-fields="thumbnail" and order-by="relevance" ',{query:query, startdate:aux, enddate:aux});
+			var res=q.results.content;
+			tweets+=res;
+			//y.log(res);
+		}
+		
+        //y.log(tweets);
+
+        response.object = <output>{tweets}</output>;
+      ]]></execute>
+    </select>
+  </bindings>
+
+</table>
