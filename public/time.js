@@ -151,7 +151,7 @@ function cbfunc( input ){
   		//alert(gStart+"<?"+auxDate+"<?"+gEnd)
       // if (gStart<auxDate && auxDate<gEnd){
         // console.log(new_data);
-        console.log(startN);
+        // console.log(startN);
   			eventSource1.loadJSON(new_data, url);
       // }
     } 
