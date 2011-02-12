@@ -68,7 +68,7 @@ function forcemore(){
   var minDate = tl.getBand(0).getMinDate();
   if(!Q || !minGlobal.getYear()) {
     // alert('no data yet');
-    window.setTimeout(forcemore, 10000);
+    window.setTimeout(forcemore, 8000);
     return;
   }
   
@@ -96,17 +96,17 @@ function forcemore(){
 
   // alert(nueva+" - "+minGlobal);
   if (nueva.getTime() != minGlobal.getTime()){
-    alert('made more work');
+    // alert('made more work');
     addEvents(nueva,minGlobal);
     minGlobal = nueva;
   } else {
-    alert('gap too small to query '+nueva.getTime() + ' ' + minGlobal.getTime());
+    // alert('gap too small to query '+nueva.getTime() + ' ' + minGlobal.getTime());
     window.setTimeout(forcemore, 20000);
     return;
   }
   
   // alert('scheduling next background work');
-  timeoutID = window.setTimeout(forcemore, 10000);
+  timeoutID = window.setTimeout(forcemore, 8000);
 }
 
 function more(){
