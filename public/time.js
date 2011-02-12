@@ -5,13 +5,15 @@ var url = '.';
 var tl;
 var eventSource1 = new Timeline.DefaultEventSource();
 var minGlobal, maxGlobal;
+var articles = new Array();
 var timeoutID;
 var YEAR_RANGE_START = 1950;
 var YEAR_RANGE_END = 2012;
+var concurrent = 0;
 
 function onLoad() {
 	var tl_el = document.getElementById("my-timeline");
-	
+	hash=[]
 	var theme1 = Timeline.ClassicTheme.create();
 	//theme1.autoWidth = true; // Set the Timeline's "width" automatically.
 	theme1.timeline_start = new Date(Date.UTC(YEAR_RANGE_START, 1, 1));
@@ -60,7 +62,7 @@ function onLoad() {
   });
   
   //if the user isn't jumping around let's grab some more data for later
-  timeoutID = window.setTimeout(forcemore, 10000);
+  timeoutID = window.setTimeout(forcemore, 6000);
 }
 
 function forcemore(){
@@ -72,11 +74,11 @@ function forcemore(){
     return;
   }
   
-  var min_global_month = (parseInt(minGlobal.getMonth()) + 1) % 12;
+  var min_global_month = (parseInt(minGlobal.getMonth()) + 2) % 12;
   var timeline_min_month = (parseInt(minDate.getMonth()) + 1) % 12;
   if(min_global_month < timeline_min_month){
     // alert('found enough for now');
-    window.setTimeout(forcemore, 20000);
+    window.setTimeout(forcemore, 10000);
     return;
   } else {
     // alert('values are ok, min_global_month '+min_global_month+ ' timeline_min_month ' +timeline_min_month);
@@ -101,12 +103,12 @@ function forcemore(){
     minGlobal = nueva;
   } else {
     // alert('gap too small to query '+nueva.getTime() + ' ' + minGlobal.getTime());
-    window.setTimeout(forcemore, 20000);
+    window.setTimeout(forcemore, 10000);
     return;
   }
   
   // alert('scheduling next background work');
-  timeoutID = window.setTimeout(forcemore, 8000);
+  timeoutID = window.setTimeout(forcemore, 2000);
 }
 
 function more(){
@@ -148,7 +150,9 @@ function addEvents(start,end){
 	}
 	alert(aux+"-"+aux2);	
 	*/
-	document.getElementById('loading').style.visibility='visible';
+	concurrent++;
+	if (concurrent>0)
+	  document.getElementById('loading').style.visibility='visible';
 	
 	var startD=(1900+start.getYear())+"-"+(1+start.getMonth())+"-"+start.getDate();
 	//alert(startD);
@@ -180,50 +184,35 @@ function cbfunc( input ){
 	if (input.query.results!=null){
 		var items = input.query.results.content;  
 	  var no_items=items.length;  
-	  for(var i=0;i<no_items;i++){  
+		var new_data = {
+  		'dateTimeFormat': 'iso8601',
+  		'events' : []
+  	};
+	  for(var i=0;i<no_items;i++){
 	  	var startN= items[i]["web-publication-date"];
   		var title = items[i]["web-title"];  
-  		var url = items[i]["web-url"];  
+  		var url = items[i]["web-url"];
   		//var desc = items[i].abstract;  
   		//startN=startN.substr(0,startN.indexOf("T"));	
 			
-  		var new_data = {
-    		'dateTimeFormat': 'iso8601',
-    		'events' : [
-  				{'start': startN,
+	    if(!articles[title + startN]){
+    		new_data.events.push({'start': startN,
   				'title': title,
   				'description': '',
   				'image': '',
   				'link': url
-  				}
-  			]
-  		};
-  		var auxDate=Timeline.DateTime.parseGregorianDateTime(startN);
-  		//alert(auxDate);
-  		//alert(gStart+"<?"+auxDate+"<?"+gEnd)
-      // if (gStart<auxDate && auxDate<gEnd){
-        // console.log(new_data);
-        // console.log(startN);
-  			eventSource1.loadJSON(new_data, url);
-      // }
+    		});
+    		articles[title + startN] = true;
+  		} else {
+        alert('skipping duplicate');
+  		}
+  		
     } 
+    eventSource1.loadJSON(new_data, url);
   }
-	document.getElementById('loading').style.visibility='hidden';
-	
-	/*var a = minGlobal.getYear()+1900;
-	var m = minGlobal.getMonth()+1;
-	var d = minGlobal.getDate();	
-	
-	if (m<10)m='0'+m;
-	if (d<10)d='0'+m;	
-	*/
-	//alert(a+"-"+m+"-"+d);
-		
-	//var nueva=Timeline.DateTime.parseGregorianDateTime(a+"-"+m+"-"+d);
-	//nueva.setTime(nueva.getTime() - Timeline.DateTime.gregorianUnitLengths[Timeline.DateTime.WEEK]);
-	
-	//alert(nueva+" - "+minGlobal);
-	//if (tl.getBand(1).getMinDate()<minGlobal) 	addEvents(nueva,minGlobal);
+  concurrent--;
+  if (concurrent==0)
+	  document.getElementById('loading').style.visibility='hidden';
 }
 
 var resizeTimerID = null;
