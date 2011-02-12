@@ -5,14 +5,17 @@ var url = '.';
 var tl;
 var eventSource1 = new Timeline.DefaultEventSource();
 var minGlobal, maxGlobal;
+var timeoutID;
+var YEAR_RANGE_START = 1950;
+var YEAR_RANGE_END = 2012;
 
 function onLoad() {
 	var tl_el = document.getElementById("my-timeline");
 	
 	var theme1 = Timeline.ClassicTheme.create();
 	//theme1.autoWidth = true; // Set the Timeline's "width" automatically.
-	theme1.timeline_start = new Date(Date.UTC(1900, 1, 1));
-	theme1.timeline_stop  = new Date(Date.UTC(2100, 1, 1));
+	theme1.timeline_start = new Date(Date.UTC(YEAR_RANGE_START, 1, 1));
+	theme1.timeline_stop  = new Date(Date.UTC(YEAR_RANGE_END, 1, 1));
 	
 	var d = Timeline.DateTime.parseGregorianDateTime("2011-02-06")
 	var bandInfos = [
@@ -23,11 +26,11 @@ function onLoad() {
 			 eventSource:	 eventSource1,
 			date:           d,
 			theme:          theme1,
-			layout:         'original'  // original, overview, detailed			 
+			layout:         'original'  // original, overview, detailed
 		 
-		 }),							 
+		 }),
 		Timeline.createBandInfo({
-         	overview:       true,								
+      overview:       true,
 			width:          30, // set to a minimum, autoWidth will then adjust
 			intervalUnit:   Timeline.DateTime.MONTH, 
 			intervalPixels: 200,
@@ -51,10 +54,55 @@ function onLoad() {
 	
 	minGlobal=null;
 	maxGlobal=null;
-	more();
+  more();
 	tl.getBand(0).addOnScrollListener(function(){
-	   more();
-    });
+    more();
+  });
+  
+  //if the user isn't jumping around let's grab some more data for later
+  timeoutID = window.setTimeout(forcemore, 10000);
+}
+
+function forcemore(){
+  // alert('making more work');
+  var minDate = tl.getBand(0).getMinDate();
+  if(!Q || !minGlobal.getYear()) {
+    // alert('no data yet');
+    window.setTimeout(forcemore, 10000);
+    return;
+  }
+  
+  var min_global_month = (parseInt(minGlobal.getMonth()) + 1) % 12;
+  var timeline_min_month = (parseInt(minDate.getMonth()) + 1) % 12;
+  if(min_global_month < timeline_min_month){
+    // alert('found enough for now');
+    window.setTimeout(forcemore, 10000);
+    return;
+  } else {
+    // alert('values are ok, min_global_month '+min_global_month+ ' timeline_min_month ' +timeline_min_month);
+  }
+  
+  var a = parseInt(minGlobal.getYear()) + 1900; 
+  var m = parseInt(minGlobal.getMonth()) + 1;
+  var d = minGlobal.getDate();
+
+  if (m<10)m='0'+m;
+  if (d<10)d='0'+m;  
+  
+  // alert("a = "+a+" m ="+m+" d = "+d);
+ 
+  var nueva=Timeline.DateTime.parseGregorianDateTime(a+"-"+m+"-"+d);
+  nueva.setTime(nueva.getTime() - Timeline.DateTime.gregorianUnitLengths[Timeline.DateTime.WEEK]);
+
+  // alert(nueva+" - "+minGlobal);
+  if (tl.getBand(1).getMinDate()<minGlobal){
+    // alert('made more work');
+    addEvents(nueva,minGlobal);
+    minGlobal = nueva;
+  }
+  
+  // alert('scheduling next background work');
+  timeoutID = window.setTimeout(forcemore, 10000);
 }
 
 function more(){
@@ -66,7 +114,7 @@ function more(){
 		minGlobal=minDate;   	
 	}
 	else if (minDate<minGlobal) {
-	    addEvents(minDate,minGlobal);
+	  addEvents(minDate,minGlobal);
 		minGlobal=minDate;   
 	}
 	else if (maxDate>maxGlobal){
