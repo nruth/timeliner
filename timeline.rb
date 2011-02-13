@@ -3,7 +3,7 @@ require 'rest-client'
 require 'haml'
 require 'json'
 
-DEFAULT_QUERY_SIZE = 200
+DEFAULT_QUERY_SIZE = 100
 
 START_YEAR = 1900
 END_YEAR = Time.now.year
@@ -26,7 +26,7 @@ get '/papers/:search_term' do |search_term|
     end
   end
   
-  timeline_json = Timeline.map_mendeley_json_to_timeline_json(papers)
+  timeline_json = Timeline.map_mendeley_hashes_to_timeline_hashes(papers)
   
   haml :'papers/timeline', :locals => {
     :timeline_data => timeline_json,
@@ -50,13 +50,16 @@ module Timeline
     JSON.parse(json)['query']
   end
 
-  def self.map_mendeley_json_to_timeline_json(json)
-    json.delete_if {|n| begin n['year'].to_i == 0 rescue true end }
-    json.map do |element|
+  def self.map_mendeley_hashes_to_timeline_hashes(list_of_hashes)
+    list_of_hashes.delete_if do |n| 
+      begin n['year'].to_i == 0 rescue true end
+    end
+
+    list_of_hashes.map do |element|
       n = {}
       n['start'] = element['year']
       n['title'] = element['title']
-      n['description'] = "#{element['authors']} #{element['publication_outlet']}"
+      n['description'] = "#{element['authors']} -- #{element['publication_outlet']}"
       n['link'] = element['mendeley_url']
       n
     end
